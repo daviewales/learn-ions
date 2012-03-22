@@ -1,0 +1,249 @@
+#!/usr/bin/env python3
+
+#This is a program to help you learn the formulae and charge and name of various
+#mono- and poly- atomic ions.
+#You can also learn the solubility rules.
+
+"""
+   Copyright 2012 David Wales
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
+
+import random
+import re
+import time
+
+ionsByCharge = {"+1":{"lithium":"Li⁺", "sodium":"Na⁺", "potassium":"K⁺",
+                      "rubidium":"Rb⁺", "cesium":"Cs⁺", "hydrogen":"H⁺",
+                      "ammonium":"NH₄⁺", "hydronium":"H₃O⁺",
+                      "silver":"Ag⁺", "copper(I)":"Cu⁺"},
+                
+                "+2":{"magnesium":"Mg²⁺", "calcium":"Ca²⁺", "strontium":"Sr²⁺",
+                      "barium":"Ba²⁺", "zinc":"Zn²⁺", "cobalt(II)":"Co²⁺",
+                      "nickel":"Ni²⁺", "tin(II)":"Sn²⁺", "iron(II)":"Fe²⁺",
+                      "lead(II)":"Pb²⁺", "copper(II)":"Cu²⁺",
+                      "mercury(II)":"Hg²⁺", "mercury(I)":"Hg₂²⁺"},
+                
+                "+3":{"aluminium":"Al³⁺", "iron(III)":"Fe³⁺",
+                      "chromium(III)":"Cr³⁺"},
+                
+                "-1":{"fluoride":"F⁻", "cyanide":"CN⁻", "hypochlorite":"ClO⁻",
+                      "chloride":"Cl⁻", "thiocyanate":"SCN⁻", "chlorite":"ClO₂⁻",
+                      "bromide":"Br⁻", "permanganate":"MnO₄⁻", "chlorate":"ClO₃⁻",
+                      "iodide":"I⁻", "hydrogensulfide":"HS⁻",
+                      "perchlorate":"ClO₄", "hydroxide":"OH⁻",
+                      "hydrogensulfate":"HSO₄⁻", "hydrogencarbonate":"HCO₃⁻",
+                      "nitrate":"NO₃⁻", "nitrite":"NO₂⁻", "hydride":"H⁻",
+                      "azide":"N₃⁻", "acetate":"CH₃COO⁻"},
+
+                "-2":{"oxide":"O²⁻", "carbonate":"CO₃²⁻", "chromate":"CrO₄²⁻",
+                      "sulfide":"S²⁻", "sulfate":"SO₄²⁻", "dichromate":"Cr₂O₇²⁻",
+                      "sulfite":"SO₃²⁻", "thiosulfate":"S₂O₃²⁻",
+                      "oxalate":"C₂O₄²⁻"},
+
+                "-3":{"phosphate":"PO₄³⁻", "nitride":"N³⁻", "phosphide":"P³⁻"}}
+
+class ionChoice():
+    def __init__(self, ions=ionsByCharge):
+        self.ions = ions
+        self.chargeChoices = list(self.ions.keys())
+        self.chargeChoice = random.choice(self.chargeChoices)
+
+        self.ionChoices = list(self.ions[self.chargeChoice])
+        self.ionChoice = random.choice(self.ionChoices)
+
+        self.ionSymbol = self.ions[self.chargeChoice][self.ionChoice]
+
+class ionQuestion:
+    def __init__(self):
+        self.ion = ionChoice()
+        article = ""
+        if re.search('^[aeiou]', self.ion.ionChoice):
+            article = "an"
+        else:
+            article = "a"
+        self.questions = ["What is the charge on {0} {1} ion?".format(article, self.ion.ionChoice),
+                     "What is the symbol for the {0} ion?".format(self.ion.ionChoice),
+                     "What is the name of the ion represented by the symbol {0}?".format(self.ion.ionSymbol)]
+
+        self.answers = [self.ion.chargeChoice, self.ion.ionSymbol, self.ion.ionChoice]
+
+
+    def formatNumbers(self, string):
+
+        #If you look closely at the following dictionaries, you will see that
+        #'^' and ',' have been defined as ''. This is because I know almost
+        #nothing about regex, and it was easier that way... If you know a better
+        #way, let me know about it. =D
+        superscript = {"0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶",
+                       "7":"⁷", "8":"⁸", "9":"⁹", "-":"⁻", "+":"⁺", "^":""}
+
+        subscript = {"0":"₀", "1":"₁", "2":"₂", "3":"₃", "4":"₄", "5":"₅", "6":"₆",
+                     "7":"₇", "8":"₈", "9":"₉", "-":"₋", "+":"₊", ",":""}
+
+        toBeSuperscripted = re.findall(r'\^[^\^]+\^', string)
+        for expression in range(len(toBeSuperscripted)):
+            replacementSuperscript = []
+            for character in toBeSuperscripted[expression]:
+                replacementSuperscript.append(superscript[character])
+            replacementSuperscript = "".join(replacementSuperscript)
+
+            #The problem here is that 'toBeSuperscripted[expression]' is a
+            #string containing the regex special character '^'. re.escape()
+            #escapes every non-alphnumeric character, allowing this to work.
+            string = re.sub(re.escape(toBeSuperscripted[expression]), replacementSuperscript, string)
+            
+        toBeSubscripted = re.findall(',[^,]+,', string)
+        for expression in range(len(toBeSubscripted)):
+            replacementSubscript = []
+            for character in toBeSubscripted[expression]:
+                replacementSubscript.append(subscript[character])
+            replacementSubscript = "".join(replacementSubscript)
+            string = re.sub(re.escape(toBeSubscripted[expression]), replacementSubscript, string)
+
+        return string
+
+
+    def lowerWithoutLoweringRomanNumeralsWhichRepresentChargeInAnIonNameLikeCopperIII(self, string):
+        #Have you ever seen a function name this long?!!
+        
+        #Cool code to split "Copper(III)" into ["Copper", "(III)"]
+        split = list(re.findall(r'^[^\(]+|\([^\)]+\)', string))
+
+        #Cool code to lowercase "Copper", but not "III"
+        split[0] = split[0].lower()
+        
+        #Cool code to join them back into one string
+        joined = "".join(split)
+
+        return joined
+
+    def betterCapitalize(string):
+        #Cool code to split "copper(III)" into ["copper", "(III)"]
+        split = list(re.findall(r'^[^\(]+|\([^\)]+\)', string))
+
+        #Cool code to capitalize "copper", but not "III"
+        split[0] = split[0].capitalize()
+        
+        #Cool code to join them back into one string
+        joined = "".join(split)
+
+        return joined
+        
+            
+
+    def askQuestion(self):
+        choice = random.randint(0,2)
+        print(self.questions[choice])
+        self.userAnswer = input(": ")
+        listOfIons = []
+
+        for ionNames in list(ionsByCharge.values()):
+            for entry in list(ionNames.keys()):
+                listOfIons.append(entry)
+        self.name = False
+
+        if self.lowerWithoutLoweringRomanNumeralsWhichRepresentChargeInAnIonNameLikeCopperIII(self.userAnswer) in listOfIons:
+            self.userAnswer = self.lowerWithoutLoweringRomanNumeralsWhichRepresentChargeInAnIonNameLikeCopperIII(self.userAnswer)
+            self.name = True
+        self.userAnswer = self.formatNumbers(self.userAnswer)
+        self.answer = self.answers[choice]
+        if re.search(r"[-|+]", list(self.userAnswer)[-1]) and len(list(self.userAnswer)) == 2:
+            self.userAnswer = list(self.userAnswer)
+            self.userAnswer = "".join(self.userAnswer[-1::-1])
+           
+        return self.userAnswer == self.answer
+
+
+choice = False
+while not choice:
+    print("\nWould you like to learn about ions and their charges [c],")
+    print("or about the solubility of ionic compounds [s],")
+    print("or both [b]?")
+    choice = input(": ")
+
+    if choice == "c":
+        print("\nHow many questions about ions and their charges would you like?")
+        number = int(input(": "))
+
+    elif choice == "s":
+        #print("\nHow many questions about the solubility of ionic compounds would you like?")
+        #number = int(input(": "))
+        print("\nThis section hasn't been implemented yet.")
+        choice = False
+
+    elif choice == "b":
+        print("\nSolubility questions haven't been implemented yet.")
+        print("\nHow many questions about ions and their charges would you like?")
+        number = int(input(": "))
+
+    else:
+        print("\n\nHuh? I don't know what you mean by '{0}'.".format(choice))
+        print("Type the characater after the option you would like.")
+        print("For example, if you want to learn about ions and their charges,")
+        print("then type 'c' when prompted.\n\n")
+        choice = False
+
+
+#testing
+##ionChoice = ionChoice()
+##print(ionChoice.chargeChoice, ionChoice.ionChoice, ionChoice.ionSymbol)
+
+print("To type a superscript, use a caret ('^') before and after what you")
+print("want superscripted: eg. Na^+^ becomes Na⁺")
+print("To type a subscript, use a comma (',') before and after what you")
+print("want subscripted: eg. Cl,-, becomes Cl₋")
+print("These can be combined into one ion: eg SO,4,^2-^ becomes SO₄²⁻")
+print("It is very important that you use these formating options.")
+print("Otherwise the computer won't know whether you're talking about")
+print("a superscript or a subscript, so it won't know whether you are")
+print("right or wrong. Obviously if it doesn't know, it will presume")
+print("the worst and tell you that you are WRONG. (which you are... =P)")
+print("\n\n")
+
+correctAnswers = 0
+incorrectAnswers = 0
+for i in range(0, number):
+    question = ionQuestion()
+    if question.askQuestion():
+        correctAnswers += 1
+
+        if question.name:
+            word = ionQuestion.betterCapitalize(question.userAnswer)
+        else:
+            word = question.userAnswer
+        print("{0} is correct!".format(word))
+    else:
+        incorrectAnswers += 1
+        print("No! {0} is the wrong answer!".format(question.userAnswer))
+        print("The correct answer is {0}!".format(question.answer))
+
+percentageCorrect = (correctAnswers/number)*100
+questionsCorrect = ""
+questionsIncorrect = ""
+if correctAnswers == 1:
+    questionsCorrect = "question"
+elif correctAnswers != 1:
+    questionsCorrect = "questions"
+if incorrectAnswers == 1:
+    questionsIncorrect = "question"
+elif incorrectAnswers != 1:
+    questionsIncorrect = "questions"
+
+    
+print("You got {correctAnswers} {questionsCorrect} right ".format(
+    correctAnswers = correctAnswers, questionsCorrect = questionsCorrect), end="")
+print("and {incorrectAnswers} {questionsIncorrect} wrong,".format(
+    incorrectAnswers = incorrectAnswers, questionsIncorrect = questionsIncorrect))
+print("making a grand total of {0:.1f}% correct.".format(percentageCorrect))
