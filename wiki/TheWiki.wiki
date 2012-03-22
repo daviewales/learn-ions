@@ -1,4 +1,5 @@
-#This is a wiki about learn-ions
+#labels Featured
+This is a wiki about ions.py
 
 = Introduction =
 
@@ -7,5 +8,5 @@ To run this code, you need to get Python 3.x, rather than Python 2.x.
 
 = Details =
 
-I've tested this code on Mac OS 10.7 running Python 3.2.2
-At the moment the syntax for entering answers is very inflexible, and the option to learn about the solubility of ions is non-existant.
+I've tested this code on Mac OS 10.7.3 running Python 3.2.2
+At the moment the option to learn about the solubility of ions is non-existant.
