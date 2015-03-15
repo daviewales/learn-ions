@@ -1,0 +1,1 @@
+This is very much alpha code. It works to an extent, but it is very fussy about the way ions and charges are typed in. Eventually I hope to add solubility rules, but at the moment it only gives questions about ions and their charges.
